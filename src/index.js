@@ -1,5 +1,5 @@
 import React from "react";
-import ReactDOM from "react-dom";
+import { createRoot } from 'react-dom/client';
 import "./index.css";
 import App from "./App";
 import { makeServer } from "./server";
@@ -12,7 +12,8 @@ import { AddressProvider } from "./contexts/AddressProvider.js";
 // Call make Server
 makeServer();
 
-ReactDOM.render(
+const root = createRoot(document.getElementById('root'));
+root.render(
   <React.StrictMode>
     <Router>
       <AuthProvider>
@@ -25,6 +26,5 @@ ReactDOM.render(
         </DataProvider>
       </AuthProvider>
     </Router>
-  </React.StrictMode>,
-  document.getElementById("root")
+  </React.StrictMode>
 );

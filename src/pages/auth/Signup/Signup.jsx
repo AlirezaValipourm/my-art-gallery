@@ -132,7 +132,7 @@ export const Signup = () => {
           </div>
 
           <div className="confirm-password-container">
-            <label for="confirm-password">Confirm Password</label>
+            <label htmlFor="confirm-password">Confirm Password</label>
             <div className="input-container">
               <input
                 required

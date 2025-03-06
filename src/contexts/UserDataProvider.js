@@ -67,13 +67,18 @@ export function UserProvider({ children }) {
   };
 
   const addToWishlistHandler = async (product) => {
-    const response = await addToWishlistService(product, auth.token);
-    dispatch({ type: "SET_WISHLIST", payload: response.data.wishlist });
+    if (auth.isAuth) {
+      const response = await addToWishlistService(product, auth.token);
+      dispatch({ type: "SET_WISHLIST", payload: response.data.wishlist });
+    } else {
+      toast("Please login first!");
+      navigate("/login", { state: { from: location } });
+    }
   };
 
   const getCartProducts = useCallback(async () => {
+    if (auth.isAuth) {
     try {
-      if (auth.isAuth) {
         setCartLoading(true);
         setError("");
         const response = await getCartService(auth.token);
@@ -81,63 +86,76 @@ export function UserProvider({ children }) {
           dispatch({ type: "SET_CART", payload: response.data.cart });
           setCartLoading(false);
         }
+      } catch (error) {
+        setCartLoading(false);
+        console.error(error);
+      } finally {
+        setCartLoading(false);
       }
-    } catch (error) {
-      setCartLoading(false);
-      console.error(error);
-    } finally {
-      setCartLoading(false);
+    } else {
+      toast("Please login first!");
+      navigate("/login", { state: { from: location } });
     }
   }, [auth, dispatch, setCartLoading, setError]);
 
   const removeFromCartHandler = async (product) => {
-    try {
-      setCartLoading(true);
-      setError("");
-      const response = await removeFromCartService(product._id, auth.token);
-      if (response.status === 200) {
+    if (auth.isAuth) {
+      try {
+        setCartLoading(true);
+        setError("");
+        const response = await removeFromCartService(product._id, auth.token);
+        if (response.status === 200) {
+          setCartLoading(false);
+          toast.success(`${product.name} successfully removed from the cart `);
+          dispatch({ type: "SET_CART", payload: response.data.cart });
+        }
+      } catch (error) {
         setCartLoading(false);
-        toast.success(`${product.name} successfully removed from the cart `);
-        dispatch({ type: "SET_CART", payload: response.data.cart });
+        console.error(error);
+      } finally {
+        setCartLoading(false);
       }
-    } catch (error) {
-      setCartLoading(false);
-      console.error(error);
-    } finally {
-      setCartLoading(false);
+    } else {
+      toast("Please login first!");
+      navigate("/login", { state: { from: location } });
     }
   };
 
   const cartCountHandler = async (product, type) => {
-    try {
-      setCartLoading(true);
-      setError("");
-      if (type === "decrement" && product.qty === 1) {
-        const response = await removeFromCartService(product._id, auth.token);
-        if (response.status === 200) {
-          setCartLoading(false);
-          toast.success(`${product.name} successfully removed from the cart`);
-          dispatch({ type: "SET_CART", payload: response.data.cart });
-        }
-      } else {
-        const response = await changeQuantityCartService(
-          product._id,
-          auth.token,
-          type
-        );
-
-        if (response.status === 200) {
-          setCartLoading(false);
-          if (type === "decrement") {
-            toast.success(`Removed one ${product.name} from the cart!`);
-          } else {
-            toast.success(`Added another ${product.name} to the cart!`);
+    if (auth.isAuth) {
+      try {
+        setCartLoading(true);
+        setError("");
+        if (type === "decrement" && product.qty === 1) {
+          const response = await removeFromCartService(product._id, auth.token);
+          if (response.status === 200) {
+            setCartLoading(false);
+            toast.success(`${product.name} successfully removed from the cart`);
+            dispatch({ type: "SET_CART", payload: response.data.cart });
           }
-          dispatch({ type: "SET_CART", payload: response.data.cart });
+        } else {
+          const response = await changeQuantityCartService(
+            product._id,
+            auth.token,
+            type
+          );
+
+          if (response.status === 200) {
+            setCartLoading(false);
+            if (type === "decrement") {
+              toast.success(`Removed one ${product.name} from the cart!`);
+            } else {
+              toast.success(`Added another ${product.name} to the cart!`);
+            }
+            dispatch({ type: "SET_CART", payload: response.data.cart });
+          }
         }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
+    } else {
+      toast("Please login first!");
+      navigate("/login", { state: { from: location } });
     }
   };
 
@@ -190,20 +208,26 @@ export function UserProvider({ children }) {
   };
 
   const getWishlistProducts = useCallback(async () => {
-    try {
-      const response = await getWishlistService(auth.token);
-      dispatch({ type: "SET_WISHLIST", payload: response.data.wishlist });
-    } catch (error) {
-      console.error(error);
+    if (auth.isAuth) {
+      try {
+        const response = await getWishlistService(auth.token);
+        dispatch({ type: "SET_WISHLIST", payload: response.data.wishlist });
+      } catch (error) {
+        console.error(error);
+      }
+    } else {
+      toast("Please login first!");
+      navigate("/login", { state: { from: location } });
     }
   }, [auth, dispatch]);
 
   const removeFromWishlistHandler = async (product) => {
-    try {
-      setCartLoading(true);
-      setError("");
-      const response = await removeFromWishlistService(product._id, auth.token);
-      if (response.status === 200) {
+    if (auth.isAuth) {
+      try {
+        setCartLoading(true);
+        setError("");
+        const response = await removeFromWishlistService(product._id, auth.token);
+        if (response.status === 200) {
         setCartLoading(false);
         toast.success(
           `${product.name} removed from the wishlist successfully!`
@@ -215,6 +239,10 @@ export function UserProvider({ children }) {
       console.error(error);
     } finally {
       setCartLoading(false);
+      }
+    } else {
+      toast("Please login first!");
+      navigate("/login", { state: { from: location } });
     }
   };
 
@@ -259,17 +287,23 @@ export function UserProvider({ children }) {
   };
 
   const clearCartHandler = async (token) => {
-    try {
-      const response = await clearCartService(token);
-      if (response.status === 201) {
-        dispatch({ type: "SET_CART", payload: [] });
+    if (auth.isAuth) {
+      try {
+        const response = await clearCartService(token);
+        if (response.status === 201) {
+          dispatch({ type: "SET_CART", payload: [] });
+        }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
+    } else {
+      toast("Please login first!");
+      navigate("/login", { state: { from: location } });
     }
   };
 
   const getAddressList = useCallback(async () => {
+    if (auth.isAuth) {
     try {
       setCartLoading(true);
       const response = await getAddressListService(auth.token);
@@ -284,15 +318,21 @@ export function UserProvider({ children }) {
       setCartLoading(false);
       console.error(error);
     } finally {
-      setCartLoading(false);
+        setCartLoading(false);
+      }
+    } else {
+      toast("Please login first!");
+      navigate("/login", { state: { from: location } });
     }
   }, [auth]);
 
   useEffect(() => {
-    getWishlistProducts();
-    getCartProducts();
-    getAddressList();
-  }, [auth, getWishlistProducts, getCartProducts, getAddressList]);
+    if (auth.isAuth) {
+      getWishlistProducts();
+      getCartProducts();
+      getAddressList();
+    }
+  }, [auth.isAuth, getWishlistProducts, getCartProducts, getAddressList]);
 
   return (
     <UserDataContext.Provider

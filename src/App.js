@@ -23,7 +23,7 @@ function App() {
           error: { duration: 1500 },
         }}
         containerStyle={{
-          top: "6rem",
+          top: "4rem",
         }}
       />
     </div>

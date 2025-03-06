@@ -41,6 +41,10 @@ export const ProductListingSection = () => {
 
   const sortedProducts = getSortedProducts(pricedProducts, sort);
 
+  const handleImageError = (e) => {
+    e.target.src = "https://via.assets.so/img.jpg?w=512&h=768&tc=%23ccc&bg=%23fff&t=404";
+  };
+
   return (
     <div className="product-card-container">
       {!sortedProducts.length ? (
@@ -75,14 +79,7 @@ export const ProductListingSection = () => {
               <div className="product-card" key={_id}>
                 <Link to={`/product-details/${id}`}>
                   <div className="product-card-image">
-                    <Tilt
-                      transitionSpeed={2000}
-                      tiltMaxAngleX={15}
-                      tiltMaxAngleY={15}
-                      scale={1.08}
-                    >
-                      <img src={img} alt="" />
-                    </Tilt>
+                      <img src={img} alt="" onError={handleImageError}/>
                   </div>
                 </Link>
 

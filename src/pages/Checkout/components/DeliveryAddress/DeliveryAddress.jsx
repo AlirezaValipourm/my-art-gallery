@@ -1,22 +1,21 @@
 import "./DeliveryAddress.css";
 import { useUserData } from "../../../../contexts/UserDataProvider.js";
 import { v4 as uuid } from "uuid";
-
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../../../../contexts/AuthProvider.js";
 import { useNavigate } from "react-router-dom";
+import PaymentModal from "../PaymentModal/PaymentModal.jsx";
 
 export const DeliveryAddress = () => {
   const { userDataState, dispatch, clearCartHandler } = useUserData();
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const {
     cartProducts,
     addressList,
     orderDetails: { cartItemsDiscountTotal, orderAddress },
   } = userDataState;
-
-  const KEY_ID = "rzp_test_VAxHG0Dkcr9qc6";
 
   const totalAmount = cartItemsDiscountTotal;
 
@@ -37,36 +36,23 @@ export const DeliveryAddress = () => {
       amountPaid: totalAmount,
       orderedProducts: [...cartProducts],
       deliveryAddress: { ...orderAddress },
+      paymentMethod: response.method,
+      savedCard: response.saved_card
     };
 
     dispatch({ type: "SET_ORDERS", payload: order });
     clearCartHandler(auth.token);
     setCurrentPage("orders");
     navigate("/profile/orders");
-  };
-
-  const razorpayOptions = {
-    key: KEY_ID,
-    currency: "INR",
-    amount: Number(totalAmount) * 100,
-    name: "Art Waves Unleashed",
-    description: "Order for products",
-    prefill: {
-      name: auth.firstName,
-      email: auth.email,
-      contact: userContact,
-    },
-    notes: { address: orderAddress },
-    theme: { color: "#000000" },
-    handler: (response) => successHandler(response),
+    
+    toast.success("Payment successful! Your order has been placed.");
   };
 
   const placeOrderHandler = () => {
     if (orderAddress) {
-      const razorpayInstance = new window.Razorpay(razorpayOptions);
-      razorpayInstance.open();
+      setShowPaymentModal(true);
     } else {
-      toast("Please select an address!");
+      toast.error("Please select an address!");
     }
   };
 
@@ -88,6 +74,18 @@ export const DeliveryAddress = () => {
           Place Order
         </button>
       </div>
+
+      <PaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        amount={totalAmount}
+        onPaymentSuccess={successHandler}
+        customerInfo={{
+          name: auth.firstName,
+          email: auth.email,
+          phone: userContact
+        }}
+      />
     </div>
   );
 };

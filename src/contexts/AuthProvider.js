@@ -61,8 +61,9 @@ export const AuthProvider = ({ children }) => {
         navigate(location?.state?.from.pathname || "/");
       }
     } catch (error) {
+      console.log("error", error);
       setLoginLoading(false);
-      setError(error.response.data.errors[0]);
+      setError((error.response.data.errors && error.response.data.errors.length > 0) &&  error.response.data.errors[0]);
     } finally {
       setLoginLoading(false);
     }

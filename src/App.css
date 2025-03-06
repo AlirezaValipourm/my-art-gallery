@@ -3,6 +3,11 @@
   padding: 0px;
   box-sizing: border-box;
 }
+
+.App {
+  overflow-x: hidden;
+}
+
 h1 {
   font-size: 2rem;
   line-height: 1.3;
